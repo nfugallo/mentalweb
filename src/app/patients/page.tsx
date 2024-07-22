@@ -88,9 +88,6 @@ export default function Patients() {
                     <Link href={`/patients/${patient.id}`} className="inline-block px-4 py-2 bg-[#14213D] text-[#FCFCFC] rounded-md hover:bg-[#748CAB] transition-colors duration-200">
                       Profilo
                     </Link>
-                    <Link href={`/patients/${patient.id}/timeline`} className="inline-block px-4 py-2 bg-[#748CAB] text-[#FCFCFC] rounded-md hover:bg-[#14213D] transition-colors duration-200">
-                      Timeline
-                    </Link>
                   </div>
                 </div>
               </div>
