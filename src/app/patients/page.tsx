@@ -13,11 +13,10 @@ export default function Patients() {
   const filteredPatients = pazienti.filter(patient => {
     const matchesSearch = patient.nome.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesAge = ageFilter === '' || calculateAge(patient.dataNascita) === parseInt(ageFilter);
-    const matchesGender = genderFilter === '' || patient.gender === genderFilter;
-    return matchesSearch && matchesAge && matchesGender;
+    return matchesSearch && matchesAge;
   });
 
-  function calculateAge(dataNascita) {
+  function calculateAge(dataNascita: string) {
     const today = new Date();
     const birthDate = new Date(dataNascita);
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -84,7 +83,6 @@ export default function Patients() {
                     <h2 className="text-lg font-semibold text-[#14213D]">{patient.nome}</h2>
                     <p className="text-sm text-[#748CAB]">Data di nascita: {patient.dataNascita}</p>
                     <p className="text-sm text-[#748CAB]">Età: {calculateAge(patient.dataNascita)} anni</p>
-                    <p className="text-sm text-[#748CAB]">Genere: {patient.gender === 'M' ? 'Maschio' : patient.gender === 'F' ? 'Femmina' : 'Altro'}</p>
                   </div>
                   <div className="space-x-2">
                     <Link href={`/patients/${patient.id}`} className="inline-block px-4 py-2 bg-[#14213D] text-[#FCFCFC] rounded-md hover:bg-[#748CAB] transition-colors duration-200">

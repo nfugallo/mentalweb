@@ -25,7 +25,7 @@ export default function Home() {
           </h2>
           <p className="text-[#14213D] mb-6">
             La nostra piattaforma assiste i professionisti della salute mentale nella gestione delle informazioni dei pazienti,
-            nel monitoraggio dei trattamenti e nel miglioramento dell'efficienza complessiva dell'assistenza. Sperimenta il
+            nel monitoraggio dei trattamenti e nel miglioramento dell&apos;efficienza complessiva dell&apos;assistenza. Sperimenta il
             futuro della gestione dei casi clinici oggi stesso.
           </p>
           <ul className="text-[#14213D] mb-6">

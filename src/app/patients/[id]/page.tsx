@@ -111,15 +111,19 @@ export default function PatientDetails({ params }: { params: { id: string } }) {
   };
 
   const handleAddEvent = (newEvent: Omit<Evento, 'id'>) => {
-    aggiungiEvento(newEvent);
-    setEventi([...eventi, { ...newEvent, id: eventi.length + 1 }]);
+    const eventWithId = { ...newEvent, id: eventi.length + 1 };
+    aggiungiEvento(eventWithId);
+    setEventi([...eventi, eventWithId]);
     setIsAddingEvent(false);
   };
 
-  const handleUpdateEvent = (updatedEvent: Evento) => {
-    aggiornaEvento(updatedEvent);
-    setEventi(eventi.map(e => e.id === updatedEvent.id ? updatedEvent : e));
-    setSelectedEvent(null);
+  const handleUpdateEvent = (updatedEvent: Omit<Evento, 'id'>) => {
+    if (selectedEvent) {
+      const eventWithId = { ...updatedEvent, id: selectedEvent.id };
+      aggiornaEvento(eventWithId);
+      setEventi(eventi.map(e => e.id === selectedEvent.id ? eventWithId : e));
+      setSelectedEvent(null);
+    }
   };
 
   const scrollToDate = (date: string) => {
@@ -129,12 +133,11 @@ export default function PatientDetails({ params }: { params: { id: string } }) {
     }
   };
 
-  const tipoColors = {
+  const tipoColors: { [key: string]: string } = {
     'Attività Clinica': 'border-blue-300',
     'Attività rivolta ai familiari': 'border-green-300',
     'Attività di supporto': 'border-yellow-300',
   };
-
   if (!paziente) return <div>Caricamento...</div>;
 
   return (
@@ -364,8 +367,7 @@ export default function PatientDetails({ params }: { params: { id: string } }) {
 {selectedTab === 'timeline' && (
               <div className="flex h-[calc(100vh-200px)]">
                 <div className="w-24 overflow-y-auto border-r border-gray-200">
-                  {[...new Set(eventi.map(e => e.data.split('-')[1]))].sort().map(month => (
-                    <button
+                {Array.from(new Set(eventi.map(e => e.data.split('-')[1]))).sort().map(month => (                    <button
                       key={month}
                       className="w-full p-2 text-left hover:bg-gray-200 text-sm"
                       onClick={() => scrollToDate(`${eventi[0].data.split('-')[2]}-${month}`)}
@@ -383,8 +385,7 @@ export default function PatientDetails({ params }: { params: { id: string } }) {
                             {evento.data}
                           </div>
                         )}
-                        <div className={`relative p-4 my-4 border-l-4 ${tipoColors[evento.tipo]} ml-4`}>
-                          <h3 className="font-bold">{evento.tipo} - {evento.categoria}</h3>
+<div className={`relative p-4 my-4 border-l-4 ${tipoColors[evento.tipo] || 'border-gray-300'} ml-4`}>                          <h3 className="font-bold">{evento.tipo} - {evento.categoria}</h3>
                           <p>{evento.descrizione}</p>
                           <p className="text-sm text-gray-500 mt-2">
                             Membro equipe: {paziente.equipe.find(m => m.id === evento.membroEquipeId)?.nome}
@@ -438,22 +439,21 @@ export default function PatientDetails({ params }: { params: { id: string } }) {
 
       {/* Event Modal */}
       {(selectedEvent || isAddingEvent) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
-            <h2 className="text-2xl font-bold mb-4">{selectedEvent ? 'Modifica Evento' : 'Aggiungi Evento'}</h2>
-            <EventForm
-              event={selectedEvent}
-              onSave={selectedEvent ? handleUpdateEvent : handleAddEvent}
-              onCancel={() => {
-                setSelectedEvent(null);
-                setIsAddingEvent(false);
-              }}
-              pazienteId={paziente.id}
-            />
-          </div>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
+          <h2 className="text-2xl font-bold mb-4">{selectedEvent ? 'Modifica Evento' : 'Aggiungi Evento'}</h2>
+          <EventForm
+            event={selectedEvent ? { ...selectedEvent } : null}
+            onSave={selectedEvent ? handleUpdateEvent : handleAddEvent}
+            onCancel={() => {
+              setSelectedEvent(null);
+              setIsAddingEvent(false);
+            }}
+            pazienteId={paziente.id}
+          />
         </div>
-      )}
-
+      </div>
+    )}
       {/* Change Details Modal */}
       {selectedChange && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -574,21 +574,30 @@ export default function PatientDetails({ params }: { params: { id: string } }) {
 
 }
 
-function EventForm({ event, onSave, onCancel, pazienteId }) {
-  const [formData, setFormData] = useState(event || {
+interface EventFormProps {
+  event: Omit<Evento, 'id'> | null;
+  onSave: (event: Omit<Evento, 'id'>) => void;
+  onCancel: () => void;
+  pazienteId: number;
+}
+
+function EventForm({ event, onSave, onCancel, pazienteId }: EventFormProps) {
+  const [formData, setFormData] = useState<Omit<Evento, 'id'>>(event || {
     pazienteId,
     data: new Date().toISOString().split('T')[0],
     tipo: '',
     categoria: '',
     descrizione: '',
-    membroEquipeId: '',
+    membroEquipeId: 0,
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSave(formData);
   };
